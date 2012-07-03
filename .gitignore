@@ -5,3 +5,7 @@
 bin/
 build/
 test-output/
+*.ipr
+*.iml
+*.iws
+.idea/
