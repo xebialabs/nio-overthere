@@ -1,0 +1,39 @@
+// build.gradle for Overfile (a java.nio.FileSystem wrapper for Overthere).
+
+defaultTasks 'build'
+
+version = '1.0.0-SNAPSHOT'
+group = 'com.xebialabs.overthere'
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+repositories {
+        mavenCentral()
+        maven {
+                url 'http://download.java.net/maven/2/'
+        }
+        maven {
+                url 'https://oss.sonatype.org/content/repositories/releases'
+        }
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+configurations {
+        compile {
+                transitive = false
+        }
+}
+
+dependencies {
+	compile 'com.xebialabs.overthere:overthere:2.0.0-beta-3'
+
+        testCompile 'org.testng:testng:5.14.10'
+	testCompile 'org.hamcrest:hamcrest-core:1.2.1'
+}
+
