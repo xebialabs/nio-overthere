@@ -38,6 +38,35 @@ public class OvertherePathTest {
 	}
 
 	@Test
+	public void shouldCreateEmptyPath() {
+		Path p = fileSystem.getPath("");
+		assertThat(p.toString(), equalTo(""));
+		assertThat(p.isAbsolute(), equalTo(false));
+	}
+	
+	@Test
+	public void shouldCreateRootPath() {
+		Path p = fileSystem.getPath("/");
+		assertThat(p.toString(), equalTo("/"));
+		assertThat(p.isAbsolute(), equalTo(true));
+	}
+	
+	@Test
+	public void shouldCreateSingleSegmentPath() {
+		String path = "first";
+		String expectedResult = "first";
+		boolean expectedAbsolute = false;
+		checkPath(expectedResult, expectedAbsolute, path);
+		
+	}
+
+	private void checkPath(String expectedPath, boolean expectedAbsolute, String first, String... more) {
+	    Path p = fileSystem.getPath(first, more);
+		assertThat(p.toString(), equalTo(expectedPath));
+		assertThat(p.isAbsolute(), equalTo(expectedAbsolute));
+    }
+
+	@Test
 	public void shouldCreatePath() {
 		assertThat(path, notNullValue());
 	}

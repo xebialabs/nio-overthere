@@ -1,6 +1,5 @@
 package com.xebialabs.overthere.nio.file;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singleton;
 
 import java.io.IOException;
@@ -11,10 +10,9 @@ import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Splitter;
+import com.google.common.base.Joiner;
 import com.xebialabs.overthere.OverthereConnection;
 
 public class OverthereFileSystem extends FileSystem {
@@ -75,15 +73,14 @@ public class OverthereFileSystem extends FileSystem {
 
 	@Override
 	public Path getPath(String first, String... more) {
-		List<String> segments = newArrayList();
-		for(String each: Splitter.on(getSeparator()).omitEmptyStrings().split(first)) {
-			segments.add(each);
+		String sep = getSeparator();
+		StringBuilder path = new StringBuilder();
+		path.append(first);
+		if(more.length > 0) {
+			path.append(sep);
+			Joiner.on(sep).skipNulls().appendTo(path, more);
 		}
-		for(String each: more) {
-			segments.add(each);
-		}
-
-		return new OvertherePath(this, segments);
+		return new OvertherePath(this, path.toString());
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.xebialabs.overthere.nio.file;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,17 +16,27 @@ import java.nio.file.WatchService;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 
 public class OvertherePath implements Path {
 
 	private OverthereFileSystem fileSystem;
 
 	private List<String> segments;
+	
+	private boolean absolute;
 
-	public OvertherePath(OverthereFileSystem fileSystem, List<String> segments) {
+	OvertherePath(OverthereFileSystem fileSystem, String path) {
+		this.fileSystem = fileSystem;
+		String sep = fileSystem.getSeparator();
+		this.absolute = path.startsWith(sep);
+		this.segments = newArrayList(Splitter.on(sep).omitEmptyStrings().split(path));
+	}
+
+	OvertherePath(OverthereFileSystem fileSystem, List<String> segments, boolean absolute) {
 		this.fileSystem = fileSystem;
 		this.segments = segments;
+		this.absolute = absolute;
     }
 
 	@Override
@@ -34,13 +45,13 @@ public class OvertherePath implements Path {
 	}
 
 	@Override
-	public boolean isAbsolute() {
-		return true;
+	public Path getRoot() {
+		throw new UnsupportedOperationException();		
 	}
 
 	@Override
-	public Path getRoot() {
-		return fileSystem.getRoot();
+	public boolean isAbsolute() {
+		return absolute;
 	}
 
 	@Override
@@ -54,7 +65,7 @@ public class OvertherePath implements Path {
 			return null;
 		}
 
-		return new OvertherePath(fileSystem, segments.subList(0, segments.size() - 1));
+		return new OvertherePath(fileSystem, segments.subList(0, segments.size() - 1), absolute);
 	}
 
 	@Override
@@ -165,7 +176,7 @@ public class OvertherePath implements Path {
 	@Override
 	public String toString() {
 		String sep = getFileSystem().getSeparator();
-		return sep + on(sep).join(segments);
+		return (absolute ? sep : "") + on(sep).join(segments);
 	}
 
 }
