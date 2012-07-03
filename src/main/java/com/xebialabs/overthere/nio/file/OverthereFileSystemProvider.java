@@ -29,12 +29,7 @@ import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.Overthere;
 import com.xebialabs.overthere.OverthereConnection;
 
-public class OverthereFileSystemProvider extends FileSystemProvider {
-
-	@Override
-	public String getScheme() {
-		return "overthere";
-	}
+public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
 	@Override
 	public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
@@ -45,7 +40,7 @@ public class OverthereFileSystemProvider extends FileSystemProvider {
 		copyQuery(uri, options);
 		copyEnvironment(env, options);
 
-		OverthereConnection connection = Overthere.getConnection(SSH_PROTOCOL, options);
+		OverthereConnection connection = Overthere.getConnection(getScheme(), options);
 		return new OverthereFileSystem(this, connection);
 	}
 

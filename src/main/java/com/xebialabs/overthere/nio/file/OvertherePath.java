@@ -46,7 +46,7 @@ public class OvertherePath implements Path {
 
 	@Override
 	public Path getRoot() {
-		throw new UnsupportedOperationException();		
+		return absolute ? fileSystem.getRoot() : null;
 	}
 
 	@Override

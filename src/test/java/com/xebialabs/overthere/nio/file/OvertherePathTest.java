@@ -27,7 +27,9 @@ public class OvertherePathTest {
 
 	@BeforeClass
 	public void createFileSystem() throws IOException {
-		fileSystem = FileSystems.newFileSystem(URI.create("overthere://overthere:overhere@overthere?os=UNIX&connectionType=SFTP"), Collections.<String, Object> emptyMap());
+		// FIXME Waiting for new overthere...
+//		fileSystem = FileSystems.newFileSystem(URI.create("overthere://overthere:overhere@overthere?os=UNIX&connectionType=SFTP"), Collections.<String, Object> emptyMap());
+		fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
 		path = fileSystem.getPath("/first", "second", "third");
 		root = fileSystem.getPath("/");
 	}
@@ -38,33 +40,25 @@ public class OvertherePathTest {
 	}
 
 	@Test
-	public void shouldCreateEmptyPath() {
-		Path p = fileSystem.getPath("");
-		assertThat(p.toString(), equalTo(""));
-		assertThat(p.isAbsolute(), equalTo(false));
+	public void shouldCreatePathsWithAbsoluteAndToStringChecks() {
+		checkPath("", false, "");
+		checkPath("/", true, "/");
+		checkPath("first", false, "first");
+		checkPath("first/second/third", false, "first", "second", "third");
+		checkPath("first/second/third", false, "first/second", "third");
+		checkPath("first/second/third", false, "first", "second/third");
+		checkPath("/first", true, "/first");
+		checkPath("/first/second/third", true, "/first", "second", "third");
+		checkPath("/first/second/third", true, "/first/second", "third");
+		checkPath("/first/second/third", true, "/first", "second/third");
+		checkPath("/first/third", true, "/first", "", "third");
 	}
 	
-	@Test
-	public void shouldCreateRootPath() {
-		Path p = fileSystem.getPath("/");
-		assertThat(p.toString(), equalTo("/"));
-		assertThat(p.isAbsolute(), equalTo(true));
-	}
-	
-	@Test
-	public void shouldCreateSingleSegmentPath() {
-		String path = "first";
-		String expectedResult = "first";
-		boolean expectedAbsolute = false;
-		checkPath(expectedResult, expectedAbsolute, path);
-		
-	}
-
 	private void checkPath(String expectedPath, boolean expectedAbsolute, String first, String... more) {
-	    Path p = fileSystem.getPath(first, more);
+		Path p = fileSystem.getPath(first, more);
 		assertThat(p.toString(), equalTo(expectedPath));
 		assertThat(p.isAbsolute(), equalTo(expectedAbsolute));
-    }
+	}
 
 	@Test
 	public void shouldCreatePath() {
@@ -74,15 +68,6 @@ public class OvertherePathTest {
 	@Test
 	public void shouldCreateOvertherePath() {
 		assertThat(path, instanceOf(OvertherePath.class));
-	}
-
-	@Test
-	public void shouldBeAbsolute() {
-		
-	}
-	@Test
-	public void shouldToString() {
-		assertThat(path.toString(), equalTo("/first/second/third"));
 	}
 
 	@Test
@@ -100,4 +85,13 @@ public class OvertherePathTest {
 		assertThat(root.getParent(), nullValue());
 	}
 
+	@Test
+	public void shouldGetRootOfRelativePath() {
+		assertThat(fileSystem.getPath("foo").getRoot(), nullValue());
+	}
+
+	@Test
+	public void shoulGetRootOfAbsolutePath() {
+		assertThat(path.getRoot().toString(), equalTo("/"));
+	}
 }
