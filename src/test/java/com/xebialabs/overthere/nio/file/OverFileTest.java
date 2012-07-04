@@ -20,8 +20,10 @@ public class OverFileTest {
 	public void shouldGetRoot() throws IOException {
 		FileSystem fileSystem = FileSystems.getFileSystem(URI.create("file:///"));
 		Path ajvanerp = fileSystem.getPath("/Users", "ajvanerp");
-		System.out.println(ajvanerp.getRoot());
-		System.out.println(fileSystem.getPath("Users", "ajvanerp").getRoot());
+		System.out.println(ajvanerp.getRoot().getFileName());
+		System.out.println(fileSystem.getPath("Users", "ajvanerp").getNameCount());
+		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getNameCount());
+		System.out.println(fileSystem.getPath("/Users", "..").getParent().getParent().getParent());
 	}
 
 }

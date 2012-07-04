@@ -81,6 +81,11 @@ public class OvertherePathTest {
 	}
 
 	@Test
+	public void shouldGetParentShouldEndUpAtRoot() {
+		assertThat(path.getParent().getParent().getParent().toString(), equalTo("/"));
+	}
+
+	@Test
 	public void shouldGetParentOfRoot() {
 		assertThat(root.getParent(), nullValue());
 	}
@@ -93,5 +98,15 @@ public class OvertherePathTest {
 	@Test
 	public void shoulGetRootOfAbsolutePath() {
 		assertThat(path.getRoot().toString(), equalTo("/"));
+	}
+
+	@Test
+	public void shouldGetFileName() {
+		assertThat(path.getFileName().toString(), equalTo("third"));
+	}
+
+	@Test
+	public void shouldNotGetFileNameOfRoot() {
+		assertThat(root.getFileName(), nullValue());
 	}
 }

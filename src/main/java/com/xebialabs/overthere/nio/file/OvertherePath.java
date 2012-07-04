@@ -56,16 +56,13 @@ public class OvertherePath implements Path {
 
 	@Override
 	public Path getFileName() {
-		throw new UnsupportedOperationException();		
+		int last = segments.size();
+		return slicePath(last - 1, last, false);
 	}
 
 	@Override
 	public Path getParent() {
-		if(segments.isEmpty()) {
-			return null;
-		}
-
-		return new OvertherePath(fileSystem, segments.subList(0, segments.size() - 1), absolute);
+		return slicePath(0, segments.size() - 1, absolute);
 	}
 
 	@Override
@@ -81,6 +78,14 @@ public class OvertherePath implements Path {
 	@Override
 	public Path subpath(int beginIndex, int endIndex) {
 		throw new UnsupportedOperationException();
+	}
+
+	private Path slicePath(int beginIndex, int endIndex, boolean absolute) {
+		if(segments.isEmpty()) {
+			return null;
+		}
+
+		return new OvertherePath(fileSystem, segments.subList(beginIndex, endIndex), absolute);
 	}
 
 	@Override
