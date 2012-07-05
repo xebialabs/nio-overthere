@@ -1,7 +1,9 @@
 package com.xebialabs.overthere.nio.file;
 
 import static com.google.common.base.Joiner.on;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.nio.file.WatchService;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
 public class OvertherePath implements Path {
@@ -72,12 +75,15 @@ public class OvertherePath implements Path {
 
 	@Override
 	public Path getName(int index) {
-		throw new UnsupportedOperationException();
+		checkArgument(index >= 0 && index < segments.size(), "Cannot call getName with index = %d on path: %s", index, toString());
+		return slicePath(index, index + 1, false);
 	}
 
 	@Override
 	public Path subpath(int beginIndex, int endIndex) {
-		throw new UnsupportedOperationException();
+		checkArgument(beginIndex >= 0 && beginIndex < segments.size(), "Cannot call subpath with beginIndex = %s on path: %s", beginIndex, toString());
+		checkArgument(endIndex > beginIndex && endIndex <= segments.size(), "Cannot call subpath with endIndex = %s on path: %s", endIndex, toString());
+		return slicePath(beginIndex, endIndex, false);
 	}
 
 	private Path slicePath(int beginIndex, int endIndex, boolean absolute) {
