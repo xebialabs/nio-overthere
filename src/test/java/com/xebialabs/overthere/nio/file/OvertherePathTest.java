@@ -22,16 +22,19 @@ public class OvertherePathTest {
 
 	FileSystem fileSystem;
 
+    private FileSystem myFileSystem;
+
 	private Path path;
+    private Path root;
 
-	private Path root;
-
-	@BeforeClass
+    @BeforeClass
 	public void createFileSystem() throws IOException {
 		// FIXME Waiting for new overthere...
 //		fileSystem = FileSystems.newFileSystem(URI.create("overthere://overthere:overhere@overthere?os=UNIX&connectionType=SFTP"), Collections.<String, Object> emptyMap());
-		fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
-		path = fileSystem.getPath("/first", "second", "third");
+        myFileSystem = FileSystems.getFileSystem(URI.create("file:///"));
+        fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
+
+        path = fileSystem.getPath("/first", "second", "third");
 		root = fileSystem.getPath("/");
 	}
 
@@ -168,4 +171,71 @@ public class OvertherePathTest {
 		assertThat(path.subpath(1, 2).toString(), equalTo("second"));
 	}
 
+    @Test
+    public void shouldStartWithPath() {
+        Path threeComponents = fileSystem.getPath("first", "second", "third");
+        Path onMyFileSystem = myFileSystem.getPath("first", "second", "third");
+        Path twoComponents = fileSystem.getPath("first", "second");
+        Path twoComponentsAbsolute = fileSystem.getPath("/first", "second");
+        Path lastTwoComponents = fileSystem.getPath("second", "third");
+        assertThat(threeComponents.startsWith(twoComponents), equalTo(true));
+        assertThat(path.startsWith(twoComponentsAbsolute), equalTo(true));
+        assertThat(threeComponents.startsWith(threeComponents), equalTo(true));
+        assertThat(path.startsWith(path), equalTo(true));
+        assertThat(onMyFileSystem.startsWith(threeComponents), equalTo(false));
+        assertThat(threeComponents.startsWith(onMyFileSystem), equalTo(false));
+        assertThat(twoComponents.startsWith(threeComponents), equalTo(false));
+        assertThat(path.startsWith(threeComponents), equalTo(false));
+        assertThat(threeComponents.startsWith(lastTwoComponents), equalTo(false));
+        assertThat(path.startsWith(threeComponents), equalTo(false));
+    }
+
+    @Test
+    public void shouldStartWithString() {
+        Path threeComponents = fileSystem.getPath("first", "second", "third");
+        Path twoComponents = fileSystem.getPath("first", "second");
+        assertThat(threeComponents.startsWith("first/second"), equalTo(true));
+        assertThat(path.startsWith("/first/second"), equalTo(true));
+        assertThat(threeComponents.startsWith("first/second/third"), equalTo(true));
+        assertThat(path.startsWith("/first/second/third"), equalTo(true));
+        assertThat(twoComponents.startsWith("first/second/third"), equalTo(false));
+        assertThat(path.startsWith("first/second/third"), equalTo(false));
+        assertThat(threeComponents.startsWith("second/third"), equalTo(false));
+        assertThat(path.startsWith("first/second/third"), equalTo(false));
+    }
+
+    @Test
+    public void shouldEndWithPath() {
+        Path lastTwoComponents = fileSystem.getPath("second", "third");
+        Path threeComponents = fileSystem.getPath("first", "second", "third");
+        Path onMyFileSystem = myFileSystem.getPath("first", "second", "third");
+        assertThat(path.endsWith(lastTwoComponents), equalTo(true));
+        assertThat(threeComponents.endsWith(lastTwoComponents), equalTo(true));
+        assertThat(path.endsWith(path), equalTo(true));
+        assertThat(threeComponents.endsWith(threeComponents), equalTo(true));
+        assertThat(path.endsWith(threeComponents), equalTo(true));
+        assertThat(threeComponents.endsWith(path), equalTo(false));
+        assertThat(onMyFileSystem.endsWith(threeComponents), equalTo(false));
+        assertThat(threeComponents.endsWith(onMyFileSystem), equalTo(false));
+    }
+
+    @Test
+    public void shouldEndWithString() {
+        Path threeComponents = fileSystem.getPath("first", "second", "third");
+        assertThat(path.endsWith("second/third"), equalTo(true));
+        assertThat(threeComponents.endsWith("second/third"), equalTo(true));
+        assertThat(path.endsWith("/first/second/third"), equalTo(true));
+        assertThat(threeComponents.endsWith("first/second/third"), equalTo(true));
+        assertThat(path.endsWith("first/second/third"), equalTo(true));
+        assertThat(threeComponents.endsWith("/first/second/third"), equalTo(false));
+    }
+
+    @Test
+    public void shouldNormalize() {
+        assertThat(fileSystem.getPath("/", "..").normalize().toString(), equalTo("/"));
+        assertThat(fileSystem.getPath("/", "first", ".").normalize().toString(), equalTo("/first"));
+        assertThat(fileSystem.getPath("/", "first", "second/..").normalize().toString(), equalTo("/first"));
+        assertThat(fileSystem.getPath("/", "first", "..", "second").normalize().toString(), equalTo("/second"));
+        assertThat(fileSystem.getPath("/", "first", ".", "second").normalize().toString(), equalTo("/first/second"));
+    }
 }

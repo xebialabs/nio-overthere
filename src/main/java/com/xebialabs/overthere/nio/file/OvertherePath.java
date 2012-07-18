@@ -17,6 +17,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -75,7 +76,7 @@ public class OvertherePath implements Path {
 
 	@Override
 	public Path getName(int index) {
-		checkArgument(index >= 0 && index < segments.size(), "Cannot call getName with index = %d on path: %s", index, toString());
+		checkArgument(index >= 0 && index < segments.size(), "Cannot call getName with index = %s on path: %s", index, toString());
 		return slicePath(index, index + 1, false);
 	}
 
@@ -96,27 +97,79 @@ public class OvertherePath implements Path {
 
 	@Override
 	public boolean startsWith(Path other) {
-		throw new UnsupportedOperationException();
+        if (!(other instanceof OvertherePath)) {
+            return false;
+        }
+
+        OvertherePath otherPath = (OvertherePath) other;
+
+        if (!otherPath.getFileSystem().equals(fileSystem)
+                || otherPath.segments.size() > segments.size()
+                || otherPath.absolute != absolute) {
+            return false;
+        }
+
+        for (int i = 0; i < otherPath.segments.size(); i++) {
+            if (!otherPath.segments.get(i).equals(segments.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
 	}
 
 	@Override
 	public boolean startsWith(String other) {
-		throw new UnsupportedOperationException();
+		return startsWith(fileSystem.getPath(other));
 	}
 
 	@Override
 	public boolean endsWith(Path other) {
-		throw new UnsupportedOperationException();
+        if (!(other instanceof OvertherePath)) {
+            return false;
+        }
+
+        OvertherePath otherPath = (OvertherePath) other;
+
+        int otherSize = otherPath.segments.size();
+        int size = segments.size();
+        if (!otherPath.getFileSystem().equals(fileSystem)
+                || otherSize > size
+                || (otherSize == size && otherPath.absolute && !absolute)) {
+            return false;
+        }
+
+        for (int i = 0; i < otherSize; i++) {
+            if (!otherPath.segments.get(otherSize - i - 1).equals(segments.get(size - i - 1))) {
+                return false;
+            }
+        }
+
+		return true;
 	}
 
 	@Override
 	public boolean endsWith(String other) {
-		throw new UnsupportedOperationException();
+		return endsWith(fileSystem.getPath(other));
 	}
 
 	@Override
 	public Path normalize() {
-		throw new UnsupportedOperationException();
+        Stack<String> filteredSegments = new Stack<String>();
+        for (String segment : segments) {
+            if (".".equals(segment)) {
+                continue;
+            }
+            if ("..".equals(segment)) {
+                if (!filteredSegments.isEmpty()) {
+                    filteredSegments.pop();
+                }
+                continue;
+            }
+            filteredSegments.push(segment);
+        }
+
+        return new OvertherePath(fileSystem, newArrayList(filteredSegments), absolute);
 	}
 
 	@Override

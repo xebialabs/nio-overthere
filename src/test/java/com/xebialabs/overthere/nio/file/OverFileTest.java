@@ -20,12 +20,16 @@ public class OverFileTest {
 	public void shouldGetRoot() throws IOException {
 		FileSystem fileSystem = FileSystems.getFileSystem(URI.create("file:///"));
 		Path ajvanerp = fileSystem.getPath("/Users", "ajvanerp");
-		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getName(0));
-		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getName(0).isAbsolute());
-		System.out.println(fileSystem.getPath("Users", "ajvanerp").getName(-1));
-		System.out.println(fileSystem.getPath("Users", "ajvanerp").getName(2));
-		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getNameCount());
-		System.out.println(fileSystem.getPath("/Users", "..").getParent().getParent().getParent());
+        System.out.println(fileSystem.getPath("/foo", "bar", "..", "..", "..").getRoot());
+        System.out.println(ajvanerp.getRoot());
+        System.out.println(fileSystem.getPath("foo/bar").getRoot());
+        System.out.println(ajvanerp.endsWith("ajvanerp"));
+//		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getName(0));
+//		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getName(0).isAbsolute());
+		System.out.println(fileSystem.getPath("Users", "ajvanerp").endsWith(ajvanerp));
+//		System.out.println(fileSystem.getPath("Users", "ajvanerp").getName(2));
+//		System.out.println(fileSystem.getPath("/Users", "ajvanerp").getNameCount());
+//		System.out.println(fileSystem.getPath("/Users", "..").getParent().getParent().getParent());
 	}
 
 }
