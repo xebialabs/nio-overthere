@@ -24,8 +24,10 @@ public class OvertherePathTest {
 
     private FileSystem myFileSystem;
 
-	private Path path;
+	private Path absolutePath;
+    private Path relativePath;
     private Path root;
+    private Path emptyPath;
 
     @BeforeClass
 	public void createFileSystem() throws IOException {
@@ -34,7 +36,9 @@ public class OvertherePathTest {
         myFileSystem = FileSystems.getFileSystem(URI.create("file:///"));
         fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
 
-        path = fileSystem.getPath("/first", "second", "third");
+        absolutePath = fileSystem.getPath("/first", "second", "third");
+        relativePath = fileSystem.getPath("first", "second", "third");
+        emptyPath = fileSystem.getPath("");
 		root = fileSystem.getPath("/");
 	}
 
@@ -66,27 +70,27 @@ public class OvertherePathTest {
 
 	@Test
 	public void shouldCreatePath() {
-		assertThat(path, notNullValue());
+		assertThat(absolutePath, notNullValue());
 	}
 
 	@Test
 	public void shouldCreateOvertherePath() {
-		assertThat(path, instanceOf(OvertherePath.class));
+		assertThat(absolutePath, instanceOf(OvertherePath.class));
 	}
 
 	@Test
 	public void shouldGetNameCount() {
-		assertThat(path.getNameCount(), equalTo(3));
+		assertThat(absolutePath.getNameCount(), equalTo(3));
 	}
 	
 	@Test
 	public void shouldGetParent() {
-		assertThat(path.getParent().toString(), equalTo("/first/second"));
+		assertThat(absolutePath.getParent().toString(), equalTo("/first/second"));
 	}
 
 	@Test
 	public void shouldGetParentShouldEndUpAtRoot() {
-		assertThat(path.getParent().getParent().getParent().toString(), equalTo("/"));
+		assertThat(absolutePath.getParent().getParent().getParent().toString(), equalTo("/"));
 	}
 
 	@Test
@@ -101,12 +105,12 @@ public class OvertherePathTest {
 
 	@Test
 	public void shoulGetRootOfAbsolutePath() {
-		assertThat(path.getRoot().toString(), equalTo("/"));
+		assertThat(absolutePath.getRoot().toString(), equalTo("/"));
 	}
 
 	@Test
 	public void shouldGetFileName() {
-		assertThat(path.getFileName().toString(), equalTo("third"));
+		assertThat(absolutePath.getFileName().toString(), equalTo("third"));
 	}
 
 	@Test
@@ -116,20 +120,20 @@ public class OvertherePathTest {
 
 	@Test
 	public void shouldGetNameOfPath() {
-		assertThat(path.getName(0).toString(), equalTo("first"));
-		assertThat(path.getName(1).toString(), equalTo("second"));
-		assertThat(path.getName(2).toString(), equalTo("third"));
+		assertThat(absolutePath.getName(0).toString(), equalTo("first"));
+		assertThat(absolutePath.getName(1).toString(), equalTo("second"));
+		assertThat(absolutePath.getName(2).toString(), equalTo("third"));
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetNameForNegativeIndex() {
-		path.getName(-1);
+		absolutePath.getName(-1);
 		fail();
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetNameForTooLargeIndex() {
-		path.getName(3);
+		absolutePath.getName(3);
 		fail();
 	}
 
@@ -141,93 +145,89 @@ public class OvertherePathTest {
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetSubpathForTooLowBeginIndex() {
-		path.subpath(-1, 2);
+		absolutePath.subpath(-1, 2);
 		fail();
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetSubpathForTooHighEndIndex() {
-		path.subpath(0, 4);
+		absolutePath.subpath(0, 4);
 		fail();
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetSubpathForReversedBeginAndEndIndex() {
-		path.subpath(3, 1);
+		absolutePath.subpath(3, 1);
 		fail();
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldNotGetSubpathForEmptyRange() {
-		path.subpath(1, 1);
+		absolutePath.subpath(1, 1);
 		fail();
 	}
 
 	@Test
 	public void shouldGetSubpath() {
-		assertThat(path.subpath(0, 3).toString(), equalTo("first/second/third"));
-		assertThat(path.subpath(1, 3).toString(), equalTo("second/third"));
-		assertThat(path.subpath(2, 3).toString(), equalTo("third"));
-		assertThat(path.subpath(1, 2).toString(), equalTo("second"));
+		assertThat(absolutePath.subpath(0, 3).toString(), equalTo("first/second/third"));
+		assertThat(absolutePath.subpath(1, 3).toString(), equalTo("second/third"));
+		assertThat(absolutePath.subpath(2, 3).toString(), equalTo("third"));
+		assertThat(absolutePath.subpath(1, 2).toString(), equalTo("second"));
 	}
 
     @Test
     public void shouldStartWithPath() {
-        Path threeComponents = fileSystem.getPath("first", "second", "third");
         Path onMyFileSystem = myFileSystem.getPath("first", "second", "third");
         Path twoComponents = fileSystem.getPath("first", "second");
         Path twoComponentsAbsolute = fileSystem.getPath("/first", "second");
         Path lastTwoComponents = fileSystem.getPath("second", "third");
-        assertThat(threeComponents.startsWith(twoComponents), equalTo(true));
-        assertThat(path.startsWith(twoComponentsAbsolute), equalTo(true));
-        assertThat(threeComponents.startsWith(threeComponents), equalTo(true));
-        assertThat(path.startsWith(path), equalTo(true));
-        assertThat(onMyFileSystem.startsWith(threeComponents), equalTo(false));
-        assertThat(threeComponents.startsWith(onMyFileSystem), equalTo(false));
-        assertThat(twoComponents.startsWith(threeComponents), equalTo(false));
-        assertThat(path.startsWith(threeComponents), equalTo(false));
-        assertThat(threeComponents.startsWith(lastTwoComponents), equalTo(false));
-        assertThat(path.startsWith(threeComponents), equalTo(false));
+        assertThat(relativePath.startsWith(twoComponents), equalTo(true));
+        assertThat(absolutePath.startsWith(twoComponentsAbsolute), equalTo(true));
+        assertThat(relativePath.startsWith(relativePath), equalTo(true));
+        assertThat(absolutePath.startsWith(absolutePath), equalTo(true));
+        assertThat(onMyFileSystem.startsWith(relativePath), equalTo(false));
+        assertThat(relativePath.startsWith(onMyFileSystem), equalTo(false));
+        assertThat(twoComponents.startsWith(relativePath), equalTo(false));
+        assertThat(absolutePath.startsWith(relativePath), equalTo(false));
+        assertThat(relativePath.startsWith(lastTwoComponents), equalTo(false));
+        assertThat(absolutePath.startsWith(relativePath), equalTo(false));
     }
 
     @Test
     public void shouldStartWithString() {
-        Path threeComponents = fileSystem.getPath("first", "second", "third");
         Path twoComponents = fileSystem.getPath("first", "second");
-        assertThat(threeComponents.startsWith("first/second"), equalTo(true));
-        assertThat(path.startsWith("/first/second"), equalTo(true));
-        assertThat(threeComponents.startsWith("first/second/third"), equalTo(true));
-        assertThat(path.startsWith("/first/second/third"), equalTo(true));
+        assertThat(relativePath.startsWith("first/second"), equalTo(true));
+        assertThat(absolutePath.startsWith("/first/second"), equalTo(true));
+        assertThat(relativePath.startsWith("first/second/third"), equalTo(true));
+        assertThat(absolutePath.startsWith("/first/second/third"), equalTo(true));
         assertThat(twoComponents.startsWith("first/second/third"), equalTo(false));
-        assertThat(path.startsWith("first/second/third"), equalTo(false));
-        assertThat(threeComponents.startsWith("second/third"), equalTo(false));
-        assertThat(path.startsWith("first/second/third"), equalTo(false));
+        assertThat(absolutePath.startsWith("first/second/third"), equalTo(false));
+        assertThat(relativePath.startsWith("second/third"), equalTo(false));
+        assertThat(absolutePath.startsWith("first/second/third"), equalTo(false));
     }
 
     @Test
     public void shouldEndWithPath() {
         Path lastTwoComponents = fileSystem.getPath("second", "third");
-        Path threeComponents = fileSystem.getPath("first", "second", "third");
         Path onMyFileSystem = myFileSystem.getPath("first", "second", "third");
-        assertThat(path.endsWith(lastTwoComponents), equalTo(true));
-        assertThat(threeComponents.endsWith(lastTwoComponents), equalTo(true));
-        assertThat(path.endsWith(path), equalTo(true));
-        assertThat(threeComponents.endsWith(threeComponents), equalTo(true));
-        assertThat(path.endsWith(threeComponents), equalTo(true));
-        assertThat(threeComponents.endsWith(path), equalTo(false));
-        assertThat(onMyFileSystem.endsWith(threeComponents), equalTo(false));
-        assertThat(threeComponents.endsWith(onMyFileSystem), equalTo(false));
+        assertThat(absolutePath.endsWith(lastTwoComponents), equalTo(true));
+        assertThat(relativePath.endsWith(lastTwoComponents), equalTo(true));
+        assertThat(absolutePath.endsWith(absolutePath), equalTo(true));
+        assertThat(relativePath.endsWith(relativePath), equalTo(true));
+        assertThat(absolutePath.endsWith(relativePath), equalTo(true));
+        assertThat(relativePath.endsWith(absolutePath), equalTo(false));
+        assertThat(onMyFileSystem.endsWith(relativePath), equalTo(false));
+        assertThat(relativePath.endsWith(onMyFileSystem), equalTo(false));
     }
 
     @Test
     public void shouldEndWithString() {
-        Path threeComponents = fileSystem.getPath("first", "second", "third");
-        assertThat(path.endsWith("second/third"), equalTo(true));
-        assertThat(threeComponents.endsWith("second/third"), equalTo(true));
-        assertThat(path.endsWith("/first/second/third"), equalTo(true));
-        assertThat(threeComponents.endsWith("first/second/third"), equalTo(true));
-        assertThat(path.endsWith("first/second/third"), equalTo(true));
-        assertThat(threeComponents.endsWith("/first/second/third"), equalTo(false));
+        assertThat(absolutePath.endsWith("second/third"), equalTo(true));
+        assertThat(relativePath.endsWith("second/third"), equalTo(true));
+        assertThat(absolutePath.endsWith("/first/second/third"), equalTo(true));
+        assertThat(relativePath.endsWith("first/second/third"), equalTo(true));
+        assertThat(absolutePath.endsWith("first/second/third"), equalTo(true));
+        assertThat(relativePath.endsWith("/first/second/third"), equalTo(false));
     }
 
     @Test
@@ -237,5 +237,61 @@ public class OvertherePathTest {
         assertThat(fileSystem.getPath("/", "first", "second/..").normalize().toString(), equalTo("/first"));
         assertThat(fileSystem.getPath("/", "first", "..", "second").normalize().toString(), equalTo("/second"));
         assertThat(fileSystem.getPath("/", "first", ".", "second").normalize().toString(), equalTo("/first/second"));
+    }
+
+    @Test
+    public void shouldResolvePaths() {
+        assertThat(relativePath.resolve(absolutePath), equalTo(absolutePath));
+        assertThat(absolutePath.resolve(relativePath), equalTo(fileSystem.getPath("/first/second/third/first/second/third")));
+        assertThat(relativePath.resolve(relativePath), equalTo(fileSystem.getPath("first/second/third/first/second/third")));
+        assertThat(absolutePath.resolve(fileSystem.getPath("")), equalTo(absolutePath));
+    }
+
+    @Test
+    public void shouldResolveStrings() {
+        assertThat(relativePath.resolve("/first/second/third"), equalTo(absolutePath));
+        assertThat(absolutePath.resolve("first/second/third"), equalTo(fileSystem.getPath("/first/second/third/first/second/third")));
+        assertThat(relativePath.resolve("first/second/third"), equalTo(fileSystem.getPath("first/second/third/first/second/third")));
+        assertThat(absolutePath.resolve(""), equalTo(absolutePath));
+    }
+
+    @Test
+    public void shouldResolveSiblingPaths() {
+        assertThat(relativePath.resolveSibling(absolutePath), equalTo(absolutePath));
+        assertThat(absolutePath.resolveSibling(relativePath), equalTo(fileSystem.getPath("/first/second/first/second/third")));
+        assertThat(relativePath.resolveSibling(relativePath), equalTo(fileSystem.getPath("first/second/first/second/third")));
+        assertThat(absolutePath.resolveSibling(emptyPath), equalTo(absolutePath.getParent()));
+    }
+
+    @Test
+    public void shouldResolveSiblingStrings() {
+        assertThat(relativePath.resolveSibling("/first/second/third"), equalTo(absolutePath));
+        assertThat(absolutePath.resolveSibling("first/second/third"), equalTo(fileSystem.getPath("/first/second/first/second/third")));
+        assertThat(relativePath.resolveSibling("first/second/third"), equalTo(fileSystem.getPath("first/second/first/second/third")));
+        assertThat(absolutePath.resolveSibling(""), equalTo(absolutePath.getParent()));
+    }
+
+    @Test
+    public void shouldOnlyRelativizeWhenBothAreAbsoluteOrNot() {
+        try {
+            absolutePath.relativize(relativePath);
+            fail();
+        } catch (IllegalArgumentException ok) {
+            // ok
+        }
+
+        try {
+            relativePath.relativize(absolutePath);
+            fail();
+        } catch (IllegalArgumentException ok) {
+            // ok
+        }
+    }
+
+    @Test
+    public void shouldRelativizePaths() {
+        assertThat(absolutePath.relativize(absolutePath), equalTo(emptyPath));
+        assertThat(relativePath.relativize(relativePath), equalTo(emptyPath));
+        assertThat(absolutePath.relativize(fileSystem.getPath("/first/fourth/fifth")), equalTo(fileSystem.getPath("../../fourth/fifth")));
     }
 }
