@@ -293,5 +293,6 @@ public class OvertherePathTest {
         assertThat(absolutePath.relativize(absolutePath), equalTo(emptyPath));
         assertThat(relativePath.relativize(relativePath), equalTo(emptyPath));
         assertThat(absolutePath.relativize(fileSystem.getPath("/first/fourth/fifth")), equalTo(fileSystem.getPath("../../fourth/fifth")));
+        assertThat(absolutePath.relativize(fileSystem.getPath("/first/fourth")), equalTo(fileSystem.getPath("../../fourth")));
     }
 }

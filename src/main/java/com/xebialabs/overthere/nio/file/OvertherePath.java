@@ -153,7 +153,7 @@ public class OvertherePath implements Path {
 
     @Override
     public Path normalize() {
-        Stack<String> filteredSegments = new Stack<String>();
+        Stack<String> filteredSegments = new Stack<>();
         for (String segment : segments) {
             if (".".equals(segment)) {
                 continue;
@@ -203,12 +203,33 @@ public class OvertherePath implements Path {
     @Override
     public Path relativize(Path other) {
         if (absolute ^ other.isAbsolute()) {
-            throw new IllegalArgumentException(format("Path [%s] and [%s] are not both (not) absolute", this, other));
+            throw new IllegalArgumentException(format("Path [%s] and [%s] are not both absolute or non-absolute", this, other));
         } else if (this.equals(other)) {
             return fileSystem.getPath("");
         }
 
-        return null;
+        int longestCommonSubstring = 0;
+        Iterator<Path> otherIt = other.iterator();
+        List<String> newSegments = newArrayList();
+        for (Path path : this) {
+            if (otherIt.hasNext()) {
+                if (path.equals(otherIt.next())) {
+                    longestCommonSubstring++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        for (int i = 0; i < segments.size() - longestCommonSubstring; i++) {
+            newSegments.add("..");
+        }
+
+        for (int i = longestCommonSubstring; i < other.getNameCount(); i++) {
+            newSegments.add(other.getName(i).toString());
+        }
+
+        return new OvertherePath(fileSystem, newSegments, false);
     }
 
     @Override
