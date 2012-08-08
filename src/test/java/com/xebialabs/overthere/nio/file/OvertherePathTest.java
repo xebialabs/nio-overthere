@@ -20,160 +20,158 @@ import org.testng.annotations.Test;
 
 public class OvertherePathTest {
 
-	FileSystem fileSystem;
+    FileSystem fileSystem;
 
     private FileSystem myFileSystem;
 
-	private Path absolutePath;
+    private Path absolutePath;
     private Path relativePath;
     private Path root;
     private Path emptyPath;
 
     @BeforeClass
-	public void createFileSystem() throws IOException {
-		// FIXME Waiting for new overthere...
-//		fileSystem = FileSystems.newFileSystem(URI.create("overthere://overthere:overhere@overthere?os=UNIX&connectionType=SFTP"), Collections.<String, Object> emptyMap());
+    public void createFileSystem() throws IOException {
         myFileSystem = FileSystems.getFileSystem(URI.create("file:///"));
         fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
 
         absolutePath = fileSystem.getPath("/first", "second", "third");
         relativePath = fileSystem.getPath("first", "second", "third");
         emptyPath = fileSystem.getPath("");
-		root = fileSystem.getPath("/");
-	}
+        root = fileSystem.getPath("/");
+    }
 
-	@AfterClass
-	public void closeFileSystem() throws IOException {
-		fileSystem.close();
-	}
+    @AfterClass
+    public void closeFileSystem() throws IOException {
+        fileSystem.close();
+    }
 
-	@Test
-	public void shouldCreatePathsWithAbsoluteAndToStringChecks() {
-		checkPath("", false, "");
-		checkPath("/", true, "/");
-		checkPath("first", false, "first");
-		checkPath("first/second/third", false, "first", "second", "third");
-		checkPath("first/second/third", false, "first/second", "third");
-		checkPath("first/second/third", false, "first", "second/third");
-		checkPath("/first", true, "/first");
-		checkPath("/first/second/third", true, "/first", "second", "third");
-		checkPath("/first/second/third", true, "/first/second", "third");
-		checkPath("/first/second/third", true, "/first", "second/third");
-		checkPath("/first/third", true, "/first", "", "third");
-	}
-	
-	private void checkPath(String expectedPath, boolean expectedAbsolute, String first, String... more) {
-		Path p = fileSystem.getPath(first, more);
-		assertThat(p.toString(), equalTo(expectedPath));
-		assertThat(p.isAbsolute(), equalTo(expectedAbsolute));
-	}
+    @Test
+    public void shouldCreatePathsWithAbsoluteAndToStringChecks() {
+        checkPath("", false, "");
+        checkPath("/", true, "/");
+        checkPath("first", false, "first");
+        checkPath("first/second/third", false, "first", "second", "third");
+        checkPath("first/second/third", false, "first/second", "third");
+        checkPath("first/second/third", false, "first", "second/third");
+        checkPath("/first", true, "/first");
+        checkPath("/first/second/third", true, "/first", "second", "third");
+        checkPath("/first/second/third", true, "/first/second", "third");
+        checkPath("/first/second/third", true, "/first", "second/third");
+        checkPath("/first/third", true, "/first", "", "third");
+    }
 
-	@Test
-	public void shouldCreatePath() {
-		assertThat(absolutePath, notNullValue());
-	}
+    private void checkPath(String expectedPath, boolean expectedAbsolute, String first, String... more) {
+        Path p = fileSystem.getPath(first, more);
+        assertThat(p.toString(), equalTo(expectedPath));
+        assertThat(p.isAbsolute(), equalTo(expectedAbsolute));
+    }
 
-	@Test
-	public void shouldCreateOvertherePath() {
-		assertThat(absolutePath, instanceOf(OvertherePath.class));
-	}
+    @Test
+    public void shouldCreatePath() {
+        assertThat(absolutePath, notNullValue());
+    }
 
-	@Test
-	public void shouldGetNameCount() {
-		assertThat(absolutePath.getNameCount(), equalTo(3));
-	}
-	
-	@Test
-	public void shouldGetParent() {
-		assertThat(absolutePath.getParent().toString(), equalTo("/first/second"));
-	}
+    @Test
+    public void shouldCreateOvertherePath() {
+        assertThat(absolutePath, instanceOf(OvertherePath.class));
+    }
 
-	@Test
-	public void shouldGetParentShouldEndUpAtRoot() {
-		assertThat(absolutePath.getParent().getParent().getParent().toString(), equalTo("/"));
-	}
+    @Test
+    public void shouldGetNameCount() {
+        assertThat(absolutePath.getNameCount(), equalTo(3));
+    }
 
-	@Test
-	public void shouldGetParentOfRoot() {
-		assertThat(root.getParent(), nullValue());
-	}
+    @Test
+    public void shouldGetParent() {
+        assertThat(absolutePath.getParent().toString(), equalTo("/first/second"));
+    }
 
-	@Test
-	public void shouldGetRootOfRelativePath() {
-		assertThat(fileSystem.getPath("foo").getRoot(), nullValue());
-	}
+    @Test
+    public void shouldGetParentShouldEndUpAtRoot() {
+        assertThat(absolutePath.getParent().getParent().getParent().toString(), equalTo("/"));
+    }
 
-	@Test
-	public void shoulGetRootOfAbsolutePath() {
-		assertThat(absolutePath.getRoot().toString(), equalTo("/"));
-	}
+    @Test
+    public void shouldGetParentOfRoot() {
+        assertThat(root.getParent(), nullValue());
+    }
 
-	@Test
-	public void shouldGetFileName() {
-		assertThat(absolutePath.getFileName().toString(), equalTo("third"));
-	}
+    @Test
+    public void shouldGetRootOfRelativePath() {
+        assertThat(fileSystem.getPath("foo").getRoot(), nullValue());
+    }
 
-	@Test
-	public void shouldNotGetFileNameOfRoot() {
-		assertThat(root.getFileName(), nullValue());
-	}
+    @Test
+    public void shoulGetRootOfAbsolutePath() {
+        assertThat(absolutePath.getRoot().toString(), equalTo("/"));
+    }
 
-	@Test
-	public void shouldGetNameOfPath() {
-		assertThat(absolutePath.getName(0).toString(), equalTo("first"));
-		assertThat(absolutePath.getName(1).toString(), equalTo("second"));
-		assertThat(absolutePath.getName(2).toString(), equalTo("third"));
-	}
+    @Test
+    public void shouldGetFileName() {
+        assertThat(absolutePath.getFileName().toString(), equalTo("third"));
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetNameForNegativeIndex() {
-		absolutePath.getName(-1);
-		fail();
-	}
+    @Test
+    public void shouldNotGetFileNameOfRoot() {
+        assertThat(root.getFileName(), nullValue());
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetNameForTooLargeIndex() {
-		absolutePath.getName(3);
-		fail();
-	}
+    @Test
+    public void shouldGetNameOfPath() {
+        assertThat(absolutePath.getName(0).toString(), equalTo("first"));
+        assertThat(absolutePath.getName(1).toString(), equalTo("second"));
+        assertThat(absolutePath.getName(2).toString(), equalTo("third"));
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetNameOfRoot() {
-		root.getName(0);
-		fail();
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetNameForNegativeIndex() {
+        absolutePath.getName(-1);
+        fail();
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetSubpathForTooLowBeginIndex() {
-		absolutePath.subpath(-1, 2);
-		fail();
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetNameForTooLargeIndex() {
+        absolutePath.getName(3);
+        fail();
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetSubpathForTooHighEndIndex() {
-		absolutePath.subpath(0, 4);
-		fail();
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetNameOfRoot() {
+        root.getName(0);
+        fail();
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetSubpathForReversedBeginAndEndIndex() {
-		absolutePath.subpath(3, 1);
-		fail();
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetSubpathForTooLowBeginIndex() {
+        absolutePath.subpath(-1, 2);
+        fail();
+    }
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldNotGetSubpathForEmptyRange() {
-		absolutePath.subpath(1, 1);
-		fail();
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetSubpathForTooHighEndIndex() {
+        absolutePath.subpath(0, 4);
+        fail();
+    }
 
-	@Test
-	public void shouldGetSubpath() {
-		assertThat(absolutePath.subpath(0, 3).toString(), equalTo("first/second/third"));
-		assertThat(absolutePath.subpath(1, 3).toString(), equalTo("second/third"));
-		assertThat(absolutePath.subpath(2, 3).toString(), equalTo("third"));
-		assertThat(absolutePath.subpath(1, 2).toString(), equalTo("second"));
-	}
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetSubpathForReversedBeginAndEndIndex() {
+        absolutePath.subpath(3, 1);
+        fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldNotGetSubpathForEmptyRange() {
+        absolutePath.subpath(1, 1);
+        fail();
+    }
+
+    @Test
+    public void shouldGetSubpath() {
+        assertThat(absolutePath.subpath(0, 3).toString(), equalTo("first/second/third"));
+        assertThat(absolutePath.subpath(1, 3).toString(), equalTo("second/third"));
+        assertThat(absolutePath.subpath(2, 3).toString(), equalTo("third"));
+        assertThat(absolutePath.subpath(1, 2).toString(), equalTo("second"));
+    }
 
     @Test
     public void shouldStartWithPath() {

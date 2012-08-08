@@ -3,6 +3,7 @@ package com.xebialabs.overthere.nio.file;
 import static java.util.Collections.singleton;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -13,93 +14,97 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.Set;
 
 import com.google.common.base.Joiner;
+import com.google.common.io.Closeables;
+
 import com.xebialabs.overthere.OverthereConnection;
 
 public class OverthereFileSystem extends FileSystem {
 
-	private OverthereFileSystemProvider provider;
+    private OverthereFileSystemProvider provider;
 
-	private OverthereConnection connection;
+    private OverthereConnection connection;
+    private URI uri;
 
-	public OverthereFileSystem(OverthereFileSystemProvider provider, OverthereConnection connection) {
-		this.provider = provider;
-		this.connection = connection;
+    public OverthereFileSystem(OverthereFileSystemProvider provider, OverthereConnection connection, final URI uri) {
+        this.provider = provider;
+        this.connection = connection;
+        this.uri = uri;
     }
 
-	@Override
-	public FileSystemProvider provider() {
-		return provider;
-	}
-
-	@Override
-	public void close() throws IOException {
-		connection.close();
-		connection = null;
-	}
-
-	@Override
-	public boolean isOpen() {
-		return connection != null;
-	}
-
-	@Override
-	public boolean isReadOnly() {
-		return false;
-	}
-
-	@Override
-	public String getSeparator() {
-		return connection.getHostOperatingSystem().getFileSeparator();
-	}
-
-	@Override
-	public Iterable<Path> getRootDirectories() {
-		return singleton(getRoot());
-	}
-
-	protected Path getRoot() {
-	    return getPath("/");
+    @Override
+    public FileSystemProvider provider() {
+        return provider;
     }
 
-	@Override
-	public Iterable<FileStore> getFileStores() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void close() throws IOException {
+        Closeables.closeQuietly(connection);
+        connection = null;
+        provider.cache.remove(uri);
+    }
 
-	@Override
-	public Set<String> supportedFileAttributeViews() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean isOpen() {
+        return connection != null;
+    }
 
-	@Override
-	public Path getPath(String first, String... more) {
-		String sep = getSeparator();
-		StringBuilder path = new StringBuilder();
-		path.append(first);
-		if(more.length > 0) {
-			path.append(sep);
-			Joiner.on(sep).skipNulls().appendTo(path, more);
-		}
-		return new OvertherePath(this, path.toString());
-	}
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
 
-	@Override
-	public PathMatcher getPathMatcher(String syntaxAndPattern) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public String getSeparator() {
+        return connection.getHostOperatingSystem().getFileSeparator();
+    }
 
-	@Override
-	public UserPrincipalLookupService getUserPrincipalLookupService() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public Iterable<Path> getRootDirectories() {
+        return singleton(getRoot());
+    }
 
-	@Override
-	public WatchService newWatchService() throws IOException {
-		throw new UnsupportedOperationException();
-	}
+    protected Path getRoot() {
+        return getPath("/");
+    }
 
-	OverthereConnection getConnection() {
-	    return connection;
-	}
+    @Override
+    public Iterable<FileStore> getFileStores() {
+        throw new UnsupportedOperationException();
+    }
 
+    @Override
+    public Set<String> supportedFileAttributeViews() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Path getPath(String first, String... more) {
+        String sep = getSeparator();
+        StringBuilder path = new StringBuilder();
+        path.append(first);
+        if (more.length > 0) {
+            path.append(sep);
+            Joiner.on(sep).skipNulls().appendTo(path, more);
+        }
+        return new OvertherePath(this, path.toString());
+    }
+
+    @Override
+    public PathMatcher getPathMatcher(String syntaxAndPattern) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public UserPrincipalLookupService getUserPrincipalLookupService() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public WatchService newWatchService() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    OverthereConnection getConnection() {
+        return connection;
+    }
 }

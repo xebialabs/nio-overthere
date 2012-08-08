@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import com.google.common.base.Splitter;
+
 import com.xebialabs.overthere.OverthereFile;
 
 import static com.google.common.base.Joiner.on;
@@ -50,7 +51,7 @@ public class OvertherePath implements Path {
     OverthereFileSystem getOverthereFileSystem() {
         return fileSystem;
     }
-    
+
     OverthereFile getOverthereFile() {
         return fileSystem.getConnection().getFile(this.toString());
     }
@@ -275,10 +276,12 @@ public class OvertherePath implements Path {
     public Iterator<Path> iterator() {
         return new Iterator<Path>() {
             private int i = 0;
+
             @Override
             public boolean hasNext() {
                 return (i < getNameCount());
             }
+
             @Override
             public Path next() {
                 if (i < getNameCount()) {
@@ -289,6 +292,7 @@ public class OvertherePath implements Path {
                     throw new NoSuchElementException();
                 }
             }
+
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();

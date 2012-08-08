@@ -1,3 +1,4 @@
 com.xebialabs.overthere.nio.file.provider.CifsFileSystemProvider
 com.xebialabs.overthere.nio.file.provider.LocalFileSystemProvider
 com.xebialabs.overthere.nio.file.provider.SshFileSystemProvider
+com.xebialabs.overthere.nio.file.provider.SshSftpFileSystemProvider

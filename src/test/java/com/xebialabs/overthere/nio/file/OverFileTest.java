@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 
 public class OverFileTest {
 
-	@Test
+	@Test(enabled = false)
 	public void shouldOpenConnection() throws IOException {
 	    FileSystem fs = FileSystems.newFileSystem(URI.create("ssh://overthere:overhere@overthere?os=UNIX&connectionType=SFTP"), Collections.<String, Object>emptyMap());
 		try {
