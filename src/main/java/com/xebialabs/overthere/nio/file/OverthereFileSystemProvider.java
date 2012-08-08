@@ -1,9 +1,9 @@
 package com.xebialabs.overthere.nio.file;
 
-import static com.xebialabs.overthere.ssh.SshConnectionBuilder.SSH_PROTOCOL;
-
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -28,6 +28,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import com.xebialabs.overthere.ConnectionOptions;
 import com.xebialabs.overthere.Overthere;
 import com.xebialabs.overthere.OverthereConnection;
+import com.xebialabs.overthere.OverthereFile;
 
 public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
@@ -92,8 +93,53 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 	}
 
 	@Override
-	public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-		throw new UnsupportedOperationException();
+	public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
+        OverthereFile ofile = ((OvertherePath) path).getOverthereFile();
+	    final InputStream in = ofile.getInputStream();
+	    return new SeekableByteChannel() {
+            @Override
+            public boolean isOpen() {
+                return true;
+            }
+            
+            @Override
+            public void close() throws IOException {
+                in.close();
+            }
+            
+            @Override
+            public int write(ByteBuffer src) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+            
+            @Override
+            public SeekableByteChannel truncate(long size) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+            
+            @Override
+            public long size() throws IOException {
+                throw new UnsupportedOperationException();
+            }
+            
+            @Override
+            public int read(ByteBuffer dst) throws IOException {
+                byte[] buf = new byte[dst.remaining()];
+                int bytesRead = in.read(buf);
+                dst.put(buf, 0, bytesRead);
+                return bytesRead;
+            }
+            
+            @Override
+            public SeekableByteChannel position(long newPosition) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+            
+            @Override
+            public long position() throws IOException {
+                throw new UnsupportedOperationException();
+            }
+        };
 	}
 
 	@Override
@@ -102,8 +148,9 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 	}
 
 	@Override
-	public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-		throw new UnsupportedOperationException();
+	public void createDirectory(final Path dir, final FileAttribute<?>... attrs) throws IOException {
+	    OverthereFile odir = ((OvertherePath) dir).getOverthereFile();
+	    odir.mkdir();
 	}
 
 	@Override

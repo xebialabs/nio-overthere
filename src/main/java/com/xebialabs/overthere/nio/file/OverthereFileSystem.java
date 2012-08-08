@@ -98,4 +98,8 @@ public class OverthereFileSystem extends FileSystem {
 		throw new UnsupportedOperationException();
 	}
 
+	OverthereConnection getConnection() {
+	    return connection;
+	}
+
 }

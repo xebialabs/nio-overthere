@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import com.google.common.base.Splitter;
+import com.xebialabs.overthere.OverthereFile;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -44,6 +45,14 @@ public class OvertherePath implements Path {
     @Override
     public FileSystem getFileSystem() {
         return fileSystem;
+    }
+
+    OverthereFileSystem getOverthereFileSystem() {
+        return fileSystem;
+    }
+    
+    OverthereFile getOverthereFile() {
+        return fileSystem.getConnection().getFile(this.toString());
     }
 
     @Override
