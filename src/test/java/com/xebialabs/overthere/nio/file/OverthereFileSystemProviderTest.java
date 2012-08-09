@@ -18,11 +18,14 @@ public class OverthereFileSystemProviderTest {
 
     private FileSystem fileSystem;
     private File tempDir;
+    private File testFile;
 
     @BeforeMethod
     public void createFileSystem() throws IOException {
         fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Maps.<String, Object>newHashMap());
         tempDir = com.google.common.io.Files.createTempDir();
+        testFile = new File(tempDir, "test.txt");
+        com.google.common.io.Files.write("Some text", testFile, Charset.defaultCharset());
     }
 
     @AfterMethod
@@ -51,13 +54,66 @@ public class OverthereFileSystemProviderTest {
         assertThat(file.isDirectory(), equalTo(true));
     }
 
+    @Test(expectedExceptions = FileAlreadyExistsException.class)
+    public void shouldNotCreateDirTwice() throws IOException {
+        File file = new File(tempDir, "b-dir");
+        file.mkdir();
+        assertThat(file.exists(), equalTo(true));
+        fileSystem.provider().createDirectory(fileSystem.getPath(file.getAbsolutePath()));
+    }
+
+    @Test(expectedExceptions = IOException.class)
+    public void shouldNotCreateDirWhenParentDoesNotExist() throws IOException {
+        File cDir = new File(tempDir, "c-dir");
+        assertThat(cDir.exists(), equalTo(false));
+        File file = new File(cDir, "child");
+        assertThat(file.exists(), equalTo(false));
+        fileSystem.provider().createDirectory(fileSystem.getPath(file.getAbsolutePath()));
+    }
+
     @Test
     public void shouldDeleteFile() throws IOException {
-        File to = new File(tempDir, "test.txt");
-        com.google.common.io.Files.write("Some text", to, Charset.defaultCharset());
-        assertThat(to.exists(), equalTo(true));
-        Path path = fileSystem.getPath(to.getAbsolutePath());
+        assertThat(testFile.exists(), equalTo(true));
+        Path path = fileSystem.getPath(testFile.getAbsolutePath());
         fileSystem.provider().delete(path);
-        assertThat(to.exists(), equalTo(false));
+        assertThat(testFile.exists(), equalTo(false));
+    }
+
+    @Test
+    public void shouldGetPath() {
+        Path path = fileSystem.provider().getPath(URI.create("local:///first/second/third"));
+        assertThat(path, equalTo(fileSystem.getPath("/first/second/third")));
+    }
+
+    @Test
+    public void shouldCheckExistence() throws IOException {
+        Path path = fileSystem.getPath(testFile.getAbsolutePath());
+        assertThat(Files.exists(path), equalTo(true));
+        Files.delete(path);
+        assertThat(Files.exists(path), equalTo(false));
+    }
+
+    @Test
+    public void shouldCheckReadAccess() {
+        Path path = fileSystem.getPath(testFile.getAbsolutePath());
+        assertThat(Files.isReadable(path), equalTo(true));
+        testFile.setReadable(false);
+        assertThat(Files.isReadable(path), equalTo(false));
+    }
+
+    @Test
+    public void shouldCheckWriteAccess() {
+        Path path = fileSystem.getPath(testFile.getAbsolutePath());
+        assertThat(Files.isWritable(path), equalTo(true));
+        testFile.setReadOnly();
+        assertThat(Files.isWritable(path), equalTo(false));
+    }
+
+    @Test
+    public void shouldCheckExecute() {
+        Path path = fileSystem.getPath(testFile.getAbsolutePath());
+        assertThat(Files.isExecutable(path), equalTo(false));
+        testFile.setExecutable(true);
+        assertThat(Files.isExecutable(path), equalTo(true));
     }
 }

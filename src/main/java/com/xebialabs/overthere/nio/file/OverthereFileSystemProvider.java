@@ -6,6 +6,7 @@ import static com.xebialabs.overthere.ssh.SshConnectionBuilder.SSH_PROTOCOL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
@@ -24,10 +25,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.google.common.collect.Maps;
 
-import com.xebialabs.overthere.ConnectionOptions;
-import com.xebialabs.overthere.Overthere;
-import com.xebialabs.overthere.OverthereConnection;
-import com.xebialabs.overthere.OverthereFile;
+import com.xebialabs.overthere.*;
 
 public abstract class OverthereFileSystemProvider extends FileSystemProvider {
     Map<URI, OverthereFileSystem> cache = newHashMap();
@@ -106,7 +104,17 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public Path getPath(URI uri) {
-        throw new UnsupportedOperationException();
+        try {
+            URI uri1 = new URI(uri.getScheme(), uri.getAuthority(), "/", uri.getQuery(), uri.getFragment());
+            if (!cache.containsKey(uri1)) {
+                newFileSystem(uri1, Maps.<String, Object>newHashMap());
+            }
+            return cache.get(uri1).getPath(uri.getPath());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Could not create URI for FileSystem lookup/creation", e);
+        } catch (IOException e) {
+            throw new FileSystemNotFoundException("Could not get or create FileSystem");
+        }
     }
 
     @Override
@@ -166,7 +174,14 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void createDirectory(final Path dir, final FileAttribute<?>... attrs) throws IOException {
-        ((OvertherePath) dir).getOverthereFile().mkdir();
+        if (Files.exists(dir)) {
+            throw new FileAlreadyExistsException(dir.toString());
+        }
+        try {
+            ((OvertherePath) dir).getOverthereFile().mkdir();
+        } catch (RuntimeIOException rio) {
+            throw new IOException(rio);
+        }
     }
 
     @Override
@@ -201,7 +216,33 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void checkAccess(Path path, AccessMode... modes) throws IOException {
-        throw new UnsupportedOperationException();
+        OverthereFile overthereFile = ((OvertherePath) path).getOverthereFile();
+        if (!overthereFile.exists()) {
+            throw new NoSuchFileException(path.toString());
+        }
+
+        if (modes == null) {
+            return;
+        }
+        for (AccessMode mode : modes) {
+            switch (mode) {
+                case READ:
+                    checkAccess(overthereFile.canRead(), path, "Can not read");
+                    break;
+                case WRITE:
+                    checkAccess(overthereFile.canWrite(), path, "Can not write");
+                    break;
+                case EXECUTE:
+                    checkAccess(overthereFile.canExecute(), path, "Can not execute");
+                    break;
+            }
+        }
+    }
+
+    private static void checkAccess(boolean access, Path path, String message) throws AccessDeniedException {
+        if (!access) {
+            throw new AccessDeniedException(path.toString(), null, message);
+        }
     }
 
     @Override
