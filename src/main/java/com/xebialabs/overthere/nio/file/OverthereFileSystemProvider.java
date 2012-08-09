@@ -1,10 +1,8 @@
 package com.xebialabs.overthere.nio.file;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.xebialabs.overthere.ssh.SshConnectionBuilder.SSH_PROTOCOL;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -18,14 +16,16 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.io.Closeables;
 
 import com.xebialabs.overthere.*;
+
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 public abstract class OverthereFileSystemProvider extends FileSystemProvider {
     Map<URI, OverthereFileSystem> cache = newHashMap();
@@ -120,7 +120,21 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
     @Override
     public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
         OverthereFile ofile = ((OvertherePath) path).getOverthereFile();
-        final InputStream in = ofile.getInputStream();
+        final InputStream in;
+        final OutputStream out;
+
+        if (options.contains(StandardOpenOption.READ)) {
+            in = ofile.getInputStream();
+        } else {
+            in = null;
+        }
+
+        if (!Sets.intersection(options, newHashSet(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.CREATE_NEW)).isEmpty()) {
+            out = ofile.getOutputStream();
+        } else {
+            out = null;
+        }
+
         return new SeekableByteChannel() {
             @Override
             public boolean isOpen() {
@@ -129,12 +143,16 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
             @Override
             public void close() throws IOException {
-                in.close();
+                Closeables.closeQuietly(in);
+                Closeables.closeQuietly(out);
             }
 
             @Override
             public int write(ByteBuffer src) throws IOException {
-                throw new UnsupportedOperationException();
+                int remaining = src.remaining();
+                out.write(src.array(), 0, remaining);
+                src.position(remaining);
+                return remaining;
             }
 
             @Override
