@@ -12,6 +12,7 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import org.testng.annotations.AfterClass;
@@ -32,7 +33,7 @@ public class OvertherePathTest {
     @BeforeClass
     public void createFileSystem() throws IOException {
         myFileSystem = FileSystems.getFileSystem(URI.create("file:///"));
-        fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Collections.<String, Object>emptyMap());
+        fileSystem = FileSystems.newFileSystem(URI.create("local:/"), Collections.<String, Object>emptyMap());
 
         absolutePath = fileSystem.getPath("/first", "second", "third");
         relativePath = fileSystem.getPath("first", "second", "third");
@@ -292,5 +293,15 @@ public class OvertherePathTest {
         assertThat(relativePath.relativize(relativePath), equalTo(emptyPath));
         assertThat(absolutePath.relativize(fileSystem.getPath("/first/fourth/fifth")), equalTo(fileSystem.getPath("../../fourth/fifth")));
         assertThat(absolutePath.relativize(fileSystem.getPath("/first/fourth")), equalTo(fileSystem.getPath("../../fourth")));
+        assertThat(fileSystem.getPath("/first/second").relativize(fileSystem.getPath("/first/second/third/fourth")), equalTo(fileSystem.getPath("third/fourth")));
+    }
+
+    @Test
+    public void shouldConvertToUri() {
+        URI uri = absolutePath.toUri();
+        assertThat(Paths.get(uri), equalTo(absolutePath));
+        Path path = fileSystem.getPath("/first/second");
+        URI uri1 = path.toUri();
+        assertThat(uri1.toString(), equalTo("local:/first/second"));
     }
 }

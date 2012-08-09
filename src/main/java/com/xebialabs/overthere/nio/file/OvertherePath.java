@@ -1,8 +1,10 @@
 package com.xebialabs.overthere.nio.file;
 
 import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
@@ -244,6 +246,15 @@ public class OvertherePath implements Path {
 
     @Override
     public URI toUri() {
+        URI uri = fileSystem.getUri();
+        if (isAbsolute()) {
+            try {
+                String host = uri.getHost();
+                return new URI(uri.getScheme(), uri.getUserInfo(), host, uri.getPort(), getPathString(), uri.getQuery(), uri.getFragment());
+            } catch (URISyntaxException e) {
+                throw new IOError(e);
+            }
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -307,6 +318,10 @@ public class OvertherePath implements Path {
 
     @Override
     public String toString() {
+        return getPathString();
+    }
+
+    private String getPathString() {
         String sep = getFileSystem().getSeparator();
         return (absolute ? sep : "") + on(sep).join(segments);
     }

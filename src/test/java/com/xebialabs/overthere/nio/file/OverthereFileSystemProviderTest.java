@@ -24,7 +24,7 @@ public class OverthereFileSystemProviderTest {
 
     @BeforeMethod
     public void createFileSystem() throws IOException {
-        fileSystem = FileSystems.newFileSystem(URI.create("local:///"), Maps.<String, Object>newHashMap());
+        fileSystem = FileSystems.newFileSystem(URI.create("local:/"), Maps.<String, Object>newHashMap());
         tempDir = com.google.common.io.Files.createTempDir();
         testFile = new File(tempDir, "test.txt");
         com.google.common.io.Files.write("Some text", testFile, Charset.defaultCharset());
@@ -38,6 +38,11 @@ public class OverthereFileSystemProviderTest {
 
     @Test(expectedExceptions = FileSystemAlreadyExistsException.class)
     public void shouldNotCreateFilesystemTwice() throws IOException {
+        FileSystems.newFileSystem(URI.create("local:/"), Maps.<String, Object>newHashMap());
+    }
+
+    @Test(expectedExceptions = FileSystemAlreadyExistsException.class)
+    public void shouldNotDistinguishBetweenLocalColonSlashAndLocalColonTripleSlash() throws IOException {
         FileSystems.newFileSystem(URI.create("local:///"), Maps.<String, Object>newHashMap());
     }
 

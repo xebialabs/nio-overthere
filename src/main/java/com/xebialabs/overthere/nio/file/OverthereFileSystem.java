@@ -107,4 +107,8 @@ public class OverthereFileSystem extends FileSystem {
     OverthereConnection getConnection() {
         return connection;
     }
+
+    URI getUri() {
+        return uri;
+    }
 }

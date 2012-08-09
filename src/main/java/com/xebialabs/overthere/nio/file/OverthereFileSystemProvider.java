@@ -105,7 +105,7 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
     @Override
     public Path getPath(URI uri) {
         try {
-            URI uri1 = new URI(uri.getScheme(), uri.getAuthority(), "/", uri.getQuery(), uri.getFragment());
+            URI uri1 = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), "/", uri.getQuery(), uri.getFragment());
             if (!cache.containsKey(uri1)) {
                 newFileSystem(uri1, Maps.<String, Object>newHashMap());
             }
