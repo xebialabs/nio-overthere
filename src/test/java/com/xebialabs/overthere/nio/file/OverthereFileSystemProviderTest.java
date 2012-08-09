@@ -11,6 +11,8 @@ import org.testng.annotations.Test;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 
+import com.xebialabs.overthere.OperatingSystemFamily;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -115,5 +117,18 @@ public class OverthereFileSystemProviderTest {
         assertThat(Files.isExecutable(path), equalTo(false));
         testFile.setExecutable(true);
         assertThat(Files.isExecutable(path), equalTo(true));
+    }
+
+    @Test
+    public void shouldCheckHiddenness() throws IOException {
+        Path hiddenPath;
+        if (((OverthereFileSystem) fileSystem).getConnection().getHostOperatingSystem() == OperatingSystemFamily.UNIX) {
+            hiddenPath = fileSystem.getPath("/first/.foo");
+        } else {
+            File hidden = new File(tempDir, "hidden.txt");
+            Files.setAttribute(hidden.toPath(), "dos:hidden", true);
+            hiddenPath = fileSystem.getPath(hidden.getAbsolutePath());
+        }
+        assertThat(".foo should be hidden on unix", Files.isHidden(hiddenPath));
     }
 }

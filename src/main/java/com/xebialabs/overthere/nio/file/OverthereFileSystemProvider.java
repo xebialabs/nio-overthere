@@ -206,7 +206,7 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public boolean isHidden(Path path) throws IOException {
-        throw new UnsupportedOperationException();
+        return ((OvertherePath) path).getOverthereFile().isHidden();
     }
 
     @Override
