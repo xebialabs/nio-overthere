@@ -104,7 +104,7 @@ public class OverthereFileSystem extends FileSystem {
         throw new UnsupportedOperationException();
     }
 
-    OverthereConnection getConnection() {
+    public OverthereConnection getConnection() {
         return connection;
     }
 

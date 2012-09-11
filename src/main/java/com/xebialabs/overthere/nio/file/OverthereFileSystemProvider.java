@@ -204,6 +204,9 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void delete(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            throw new NoSuchFileException(path.toString());
+        }
         ((OvertherePath) path).getOverthereFile().delete();
     }
 

@@ -86,6 +86,14 @@ public class OverthereFileSystemProviderTest {
         assertThat(testFile.exists(), equalTo(false));
     }
 
+    @Test(expectedExceptions = NoSuchFileException.class)
+    public void shouldThrowWhenDeletingNonExistingFile() throws IOException {
+        File foo = new File(tempDir, "foo");
+        assertThat(foo.exists(), equalTo(false));
+        Path path = fileSystem.getPath(foo.getAbsolutePath());
+        fileSystem.provider().delete(path);
+    }
+
     @Test
     public void shouldGetPath() {
         Path path = fileSystem.provider().getPath(URI.create("local:///first/second/third"));
