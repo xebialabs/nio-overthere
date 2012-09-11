@@ -187,7 +187,11 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public DirectoryStream<Path> newDirectoryStream(Path dir, Filter<? super Path> filter) throws IOException {
-        throw new UnsupportedOperationException();
+        if (!Files.isDirectory(dir)) {
+            throw new NotDirectoryException(dir.toString());
+        }
+
+        return new OverthereDirectoryStream(((OvertherePath) dir), filter);
     }
 
     @Override
@@ -273,7 +277,12 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
 
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-        throw new UnsupportedOperationException();
+        if (!BasicFileAttributes.class.isAssignableFrom(type)) {
+            throw new UnsupportedOperationException("Don't support non BasicFileAttributes.");
+        }
+
+        OverthereFile overthereFile = ((OvertherePath) path).getOverthereFile();
+        return (A) new OverthereFileAttributes(overthereFile);
     }
 
     @Override
