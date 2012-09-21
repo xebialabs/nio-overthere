@@ -9,7 +9,6 @@ import com.xebialabs.overthere.OverthereConnection;
 import com.xebialabs.overthere.OverthereProcess;
 import com.xebialabs.overthere.local.LocalConnection;
 import com.xebialabs.overthere.nio.file.OverthereFileSystem;
-import com.xebialabs.overthere.util.ConsoleOverthereProcessOutputHandler;
 
 import static com.xebialabs.overthere.util.ConsoleOverthereProcessOutputHandler.consoleHandler;
 

@@ -275,6 +275,7 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
         if (!BasicFileAttributes.class.isAssignableFrom(type)) {

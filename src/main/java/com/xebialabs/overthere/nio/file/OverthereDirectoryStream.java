@@ -9,7 +9,6 @@ import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 import com.xebialabs.overthere.OverthereFile;
 
@@ -17,11 +16,9 @@ import static com.google.common.collect.Lists.transform;
 
 public class OverthereDirectoryStream implements DirectoryStream<Path> {
 
-    private OvertherePath dir;
     private Iterable<Path> paths;
 
     public OverthereDirectoryStream(final OvertherePath dir, final Filter<? super Path> filter) {
-        this.dir = dir;
         initEntries(dir, filter);
     }
 
