@@ -165,7 +165,7 @@ public class OvertherePath implements Path {
 
     @Override
     public Path normalize() {
-        Stack<String> filteredSegments = new Stack<>();
+        Stack<String> filteredSegments = new Stack<String>();
         for (String segment : segments) {
             if (".".equals(segment)) {
                 continue;
