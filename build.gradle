@@ -33,7 +33,8 @@ configurations {
 dependencies {
   compile 'com.xebialabs.overthere:overthere:2.1.0-beta-1'
   compile 'com.google.guava:guava:12.0'
-  compile 'org.apache.httpcomponents:httpclient:4.1.1', 'org.apache.httpcomponents:httpcore:4.1.1'
+  compile 'org.apache.httpcomponents:httpclient:4.2.1'
+  compile 'org.apache.httpcomponents:httpcore:4.2.1'
   testCompile 'org.testng:testng:5.14.10'
   testCompile 'org.hamcrest:hamcrest-core:1.2.1'
   testCompile 'com.xebialabs.cloud:overcast:1.1.1'
