@@ -2,7 +2,7 @@
 
 defaultTasks 'build'
 
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0-beta-1'
 group = 'com.xebialabs.overthere'
 
 apply plugin: 'idea'
@@ -44,3 +44,79 @@ dependencies {
   testCompile 'ch.qos.logback:logback-classic:1.0.6'
 }
 
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives sourcesJar, javadocJar
+}
+
+signing {
+  required { gradle.taskGraph.hasTask('uploadArchives') }
+  sign configurations.archives
+}
+
+uploadArchives {
+  if(project.hasProperty('sonatypeUsername')) {
+    repositories.mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      configuration = configurations.archives
+
+      repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
+      snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
+
+      pom.project {
+        name 'NIO Overthere'
+        description 'java.nio.file SPI implementation for Overthere.'
+        packaging 'jar'
+        url 'https://github.com/xebialabs/nio-overthere'
+        inceptionYear '2012'
+
+        scm {
+          url 'https://github.com/xebialabs/nio-overthere'
+        }
+
+        licenses {
+          license {
+            name 'GPLv2 with XebiaLabs FLOSS License Exception'
+            url 'https://github.com/xebialabs/nio-overthere/blob/master/LICENSE'
+            distribution 'repo'
+          }
+        }
+
+        developers {
+          developer {
+            id 'vpartington'
+            name 'Vincent Partington'
+            url 'http://www.xebialabs.com/'
+            email 'vpartington@xebialabs.com'
+            roles {
+              role 'Developer'
+            }
+          }
+          developer {
+            id 'hierynomus'
+            name 'Jeroen van Erp'
+            url 'http://www.xebialabs.com/'
+            email 'jvanerp@xebialabs.com'
+            roles {
+              role 'Developer'
+            }
+          }
+        }
+      }
+    }
+  }
+}
