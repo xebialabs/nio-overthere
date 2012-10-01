@@ -35,9 +35,12 @@ dependencies {
   compile 'com.google.guava:guava:12.0'
   compile 'org.apache.httpcomponents:httpclient:4.2.1'
   compile 'org.apache.httpcomponents:httpcore:4.2.1'
+  compile 'org.codehaus.jackson:jackson-core-asl:1.9.9'
   testCompile 'org.testng:testng:5.14.10'
   testCompile 'org.hamcrest:hamcrest-core:1.2.1'
-  testCompile 'com.xebialabs.cloud:overcast:1.1.1'
+  testCompile('com.xebialabs.cloud:overcast:1.1.1') {
+    exclude group: 'org.codehaus.jackson', module: 'jackson-core-asl'
+  }
   testCompile 'ch.qos.logback:logback-classic:1.0.6'
 }
 
