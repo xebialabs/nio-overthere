@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
@@ -118,6 +119,20 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
     }
 
     @Override
+    public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
+        if (options.length > 0) {
+            for (OpenOption opt: options) {
+                if (opt != StandardOpenOption.READ) {
+                    throw new UnsupportedOperationException("'" + opt + "' not allowed");
+                }
+            }
+        } else if (options.length == 0) {
+            options = new OpenOption[] {StandardOpenOption.READ};
+        }
+        return Channels.newInputStream(Files.newByteChannel(path, options));
+    }
+
+    @Override
     public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
         OverthereFile ofile = ((OvertherePath) path).getOverthereFile();
         final InputStream in;
@@ -169,7 +184,9 @@ public abstract class OverthereFileSystemProvider extends FileSystemProvider {
             public int read(ByteBuffer dst) throws IOException {
                 byte[] buf = new byte[dst.remaining()];
                 int bytesRead = in.read(buf);
-                dst.put(buf, 0, bytesRead);
+                if (bytesRead > 0) {
+                    dst.put(buf, 0, bytesRead);
+                }
                 return bytesRead;
             }
 
